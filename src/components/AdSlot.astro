@@ -1,0 +1,17 @@
+---
+// Renders a Google AdSense unit when PUBLIC_ADSENSE_CLIENT and the slot id are set.
+// In local dev it shows a dashed placeholder; in production with no ad config it renders nothing.
+const { name = 'feed', side = false } = Astro.props;
+const env = import.meta.env;
+const client = env.PUBLIC_ADSENSE_CLIENT;
+const slot = env['PUBLIC_AD_SLOT_' + name.toUpperCase()];
+const live = Boolean(client && slot);
+const dev = Boolean(env.DEV);
+---
+{live && (
+  <div class:list={['ad', { side }]}>
+    <ins class="adsbygoogle" style="display:block" data-ad-client={client} data-ad-slot={slot} data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+)}
+{!live && dev && <div class:list={['ad', 'ph', { side }]}>Ad space ({name})</div>}

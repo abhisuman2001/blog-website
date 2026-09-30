@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import { getPosts, CATS, fmtDate, readMins } from '../../lib/sanity.js';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((p) => ({ params: { slug: p.slug }, props: { p } }));
+}
+const { p } = Astro.props;
+const i = p.html.indexOf('</p>') + 4;
+const before = i > 3 ? p.html.slice(0, i) : p.html;
+const after = i > 3 ? p.html.slice(i) : '';
+const ld = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: p.title, description: p.excerpt,
+  datePublished: p.date, image: p.image ? [p.image] : undefined,
+};
+---
+<Base title={`${p.title} – ShipLog`} description={p.excerpt} type="article" image={p.image}>
+  <div class="cols">
+    <article class={`art ${p.cat}`}>
+      <a class="back" href="/">← All posts</a><br />
+      <span class="tag">{CATS[p.cat]}</span>
+      <h1>{p.title}</h1>
+      <div class="meta">{fmtDate(p.date)} · {readMins(p.html)} min read</div>
+      {p.image && <figure><img src={`${p.image}?w=1200&auto=format`} alt={p.imageAlt || p.title} /></figure>}
+      <Fragment set:html={before} />
+      <AdSlot name="article" />
+      <Fragment set:html={after} />
+    </article>
+    <aside><AdSlot name="sidebar" side /></aside>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+</Base>

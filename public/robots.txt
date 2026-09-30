@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://shiplog.me/sitemap-index.xml

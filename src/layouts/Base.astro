@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+const {
+  title = 'ShipLog – Hackathon, AI and tech updates',
+  description = 'Hackathon updates, AI news and practical tech guides for people who build things.',
+  type = 'website',
+  image,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const client = import.meta.env.PUBLIC_ADSENSE_CLIENT;
+const path = Astro.url.pathname;
+const nav = [['/', 'All'], ['/category/hack/', 'Hackathons'], ['/category/ai/', 'AI'], ['/category/tech/', 'Tech']];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <link rel="alternate" type="application/rss+xml" title="ShipLog" href="/rss.xml" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content={type} />
+  <meta property="og:url" content={canonical} />
+  {image && <meta property="og:image" content={image} />}
+  <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+  <script is:inline>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  {client && <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`} crossorigin="anonymous"></script>}
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="logo" href="/">Ship<i>Log</i></a>
+      <nav aria-label="Topics">
+        {nav.map(([href, label]) => <a class="chip" href={href} aria-current={path === href ? 'page' : undefined}>{label}</a>)}
+      </nav>
+      <span class="grow"></span>
+      <input type="search" id="q" placeholder="Search posts" aria-label="Search posts" />
+      <button class="theme" id="th" aria-label="Toggle dark mode">◐</button>
+    </header>
+    <slot />
+    <footer>
+      <span>© {new Date().getFullYear()} ShipLog</span>
+      <a href="/about/">About</a><a href="/privacy/">Privacy policy</a><a href="/contact/">Contact</a><a href="/rss.xml">RSS</a>
+    </footer>
+  </div>
+  <script is:inline>
+    var q=document.getElementById('q');
+    q.addEventListener('input',function(){var t=q.value.toLowerCase();document.querySelectorAll('.post').forEach(function(p){p.hidden=!p.textContent.toLowerCase().includes(t)})});
+    document.getElementById('th').addEventListener('click',function(){var r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches,c=r.dataset.theme||(d?'dark':'light'),n=c==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('theme',n)}catch(e){}});
+  </script>
+</body>
+</html>

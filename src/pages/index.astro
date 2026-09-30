@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import PostRow from '../components/PostRow.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { getPosts } from '../lib/sanity.js';
+const posts = await getPosts();
+const f = posts[0];
+---
+<Base>
+  <section class="hero">
+    <div>
+      <h1>Hackathons, AI and tech, minus the noise.</h1>
+      <p>Fresh updates and practical guides for people who build things.</p>
+    </div>
+    {f && <a class="stamp" href={`/posts/${f.slug}/`}><small>Latest post</small><h2>{f.title}</h2><span>{f.excerpt}</span></a>}
+  </section>
+  <div class="cols">
+    <main>
+      {posts.map((p, i) => (<><PostRow p={p} />{i === 1 && <AdSlot name="feed" />}</>))}
+    </main>
+    <aside><AdSlot name="sidebar" side /></aside>
+  </div>
+</Base>
