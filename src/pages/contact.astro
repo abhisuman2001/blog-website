@@ -1,9 +1,41 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SITE, AUTHOR } from '../config.js';
 ---
-<Base title="Contact – ShipLog" description="Get in touch with ShipLog.">
-  <div class="art">
-    <h1>Contact</h1>
-    <p>EDIT ME: add your email address or social links here so readers and advertisers can reach you.</p>
+<Base title="Contact" description={`How to reach ${SITE.name} with corrections, tips and collaboration requests.`}>
+  <header class="page-head container">
+    <p class="eyebrow">Contact</p>
+    <h1 class="display display-md">Say hello.</h1>
+    <p class="lede">Found a mistake, know a hackathon that should be on the log, or want to work together? Here's how to reach me.</p>
+  </header>
+
+  <div class="container page-body">
+    <ul class="contact-grid">
+      {AUTHOR.email && (
+        <li>
+          <a class="contact-card" href={`mailto:${AUTHOR.email}`}>
+            <span class="panel-label">Email</span>
+            <span class="contact-value">{AUTHOR.email}</span>
+            <span class="contact-hint">Best for corrections and collaborations.</span>
+          </a>
+        </li>
+      )}
+      {AUTHOR.github && (
+        <li>
+          <a class="contact-card" href={AUTHOR.github} rel="me noopener">
+            <span class="panel-label">GitHub</span>
+            <span class="contact-value">{AUTHOR.github.replace(/^https?:\/\/(www\.)?/, '')}</span>
+            <span class="contact-hint">Code, projects, and issues.</span>
+          </a>
+        </li>
+      )}
+      <li>
+        <a class="contact-card" href="/rss.xml">
+          <span class="panel-label">RSS</span>
+          <span class="contact-value">shiplog.me/rss.xml</span>
+          <span class="contact-hint">Follow new entries in any feed reader.</span>
+        </a>
+      </li>
+    </ul>
   </div>
 </Base>

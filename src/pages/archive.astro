@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import TopicTag from '../components/TopicTag.astro';
+import { getPosts, entryNo } from '../lib/posts.js';
+import { byYear, fmtDayMonth, iso } from '../lib/format.js';
+import { SITE } from '../config.js';
+
+const posts = await getPosts();
+const years = byYear(posts);
+---
+<Base title="Archive" description={`Every ${SITE.name} entry, newest first.`}>
+  <header class="page-head container">
+    <p class="eyebrow">{posts.length} {posts.length === 1 ? 'entry' : 'entries'}</p>
+    <h1 class="display display-md">The archive</h1>
+    <p class="lede">Every entry in the log, newest first.</p>
+  </header>
+
+  <div class="container archive">
+    {years.map((y) => (
+      <section class="archive-year" aria-labelledby={`y-${y.label}`}>
+        <h2 id={`y-${y.label}`} class="archive-year-label">{y.label} <span>{y.posts.length}</span></h2>
+        <ol class="archive-list">
+          {y.posts.map((p) => (
+            <li class="archive-row">
+              <time datetime={iso(p.date)}>{fmtDayMonth(p.date)}</time>
+              <a href={`/posts/${p.slug}/`}>{p.title}</a>
+              <span class="archive-meta"><span class="entry-no">{entryNo(p.no)}</span><TopicTag topic={p.topic} /></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+</Base>

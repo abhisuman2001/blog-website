@@ -1,0 +1,28 @@
+---
+import EntryRow from './EntryRow.astro';
+import AdSlot from './AdSlot.astro';
+import { byMonth } from '../lib/format.js';
+
+// Entries grouped under month headings. `level` is the month heading level; entry titles sit one below it.
+// `adAfter` places one in-feed ad after that many entries (only when more entries follow it).
+const { posts, level = 2, adAfter } = Astro.props;
+const H = `h${level}`;
+let seen = 0;
+const groups = byMonth(posts).map((g) => ({
+  ...g,
+  posts: g.posts.map((p) => ({ p, ad: adAfter && ++seen === adAfter && seen < posts.length })),
+}));
+---
+<div class="log-list">
+  {groups.map((g) => (
+    <section class="log-month">
+      <H class="log-month-label"><span>{g.label}</span></H>
+      {g.posts.map(({ p, ad }) => (
+        <>
+          <EntryRow post={p} level={level + 1} />
+          {ad && <AdSlot name="feed" />}
+        </>
+      ))}
+    </section>
+  ))}
+</div>

@@ -1,0 +1,38 @@
+---
+import Logo from './Logo.astro';
+import { SITE, TOPICS } from '../config.js';
+---
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-about">
+      <a class="brand" href="/">
+        <Logo size={32} />
+        <span class="wordmark">{SITE.name}</span>
+      </a>
+      <p>{SITE.description}</p>
+      <a class="btn btn-small" href="/rss.xml">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14" /><circle cx="6" cy="18" r="1.5" /></svg>
+        Subscribe via RSS
+      </a>
+    </div>
+    <nav aria-labelledby="footer-topics">
+      <h2 id="footer-topics" class="footer-heading">Topics</h2>
+      <ul>
+        {Object.values(TOPICS).map((t) => <li><a href={`/topics/${t.slug}/`}>{t.name}</a></li>)}
+        <li><a href="/archive/">All entries</a></li>
+      </ul>
+    </nav>
+    <nav aria-labelledby="footer-site">
+      <h2 id="footer-site" class="footer-heading">{SITE.name}</h2>
+      <ul>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/contact/">Contact</a></li>
+        <li><a href="/privacy/">Privacy policy</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="container footer-base">
+    <span>© {new Date().getFullYear()} {SITE.name}</span>
+    <a href="#main">Back to top ↑</a>
+  </div>
+</footer>

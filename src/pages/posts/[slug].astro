@@ -1,33 +1,196 @@
 ---
 import Base from '../../layouts/Base.astro';
+import TopicTag from '../../components/TopicTag.astro';
 import AdSlot from '../../components/AdSlot.astro';
-import { getPosts, CATS, fmtDate, readMins } from '../../lib/sanity.js';
+import Toc from '../../components/Toc.astro';
+import ShareLinks from '../../components/ShareLinks.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts, entryNo, related, adjacent, imgUrl, imgSrcset } from '../../lib/posts.js';
+import { fmtDate, fmtShort, iso, sameDay } from '../../lib/format.js';
+import { SITE, AUTHOR, TOPICS } from '../../config.js';
+
 export async function getStaticPaths() {
   const posts = await getPosts();
-  return posts.map((p) => ({ params: { slug: p.slug }, props: { p } }));
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post, posts } }));
 }
-const { p } = Astro.props;
-const i = p.html.indexOf('</p>') + 4;
-const before = i > 3 ? p.html.slice(0, i) : p.html;
-const after = i > 3 ? p.html.slice(i) : '';
-const ld = {
-  '@context': 'https://schema.org', '@type': 'Article', headline: p.title, description: p.excerpt,
-  datePublished: p.date, image: p.image ? [p.image] : undefined,
-};
+
+const { post: p, posts } = Astro.props;
+const topic = TOPICS[p.topic];
+const url = new URL(`/posts/${p.slug}/`, Astro.site).href;
+const cover = p.image?.url ? imgUrl(p.image.url, Math.min(p.image.w || 1200, 1200)) : null;
+const wasUpdated = !sameDay(p.date, p.updated);
+const { newer, older } = adjacent(p, posts);
+const more = related(p, posts);
+const initials = AUTHOR.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('');
+
+// One in-article ad, only in longer posts, placed at a section break near the middle.
+let before = p.html;
+let after = '';
+if (p.paragraphs >= 8) {
+  const breaks = [...p.html.matchAll(/<\/p>(?=<h2)/g)].map((m) => m.index + 4);
+  const fallback = [...p.html.matchAll(/<\/p>(?=<p>)/g)].map((m) => m.index + 4);
+  const middle = p.html.length / 2;
+  const pick = (list) => list.reduce((best, i) => (Math.abs(i - middle) < Math.abs(best - middle) ? i : best), list[0]);
+  const at = breaks.length ? pick(breaks) : fallback.length ? pick(fallback) : -1;
+  if (at > 0) {
+    before = p.html.slice(0, at);
+    after = p.html.slice(at);
+  }
+}
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: p.title,
+    description: p.excerpt,
+    datePublished: iso(p.date),
+    dateModified: iso(p.updated),
+    image: cover ? [cover] : [new URL('/og-default.png', Astro.site).href],
+    mainEntityOfPage: url,
+    articleSection: topic.name,
+    author: { '@type': 'Person', name: AUTHOR.name, url: new URL('/about/', Astro.site).href },
+    publisher: { '@type': 'Organization', name: SITE.name, logo: { '@type': 'ImageObject', url: new URL('/favicon.svg', Astro.site).href } },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: SITE.name, item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: topic.name, item: new URL(`/topics/${topic.slug}/`, Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: p.title, item: url },
+    ],
+  },
+];
 ---
-<Base title={`${p.title} – ShipLog`} description={p.excerpt} type="article" image={p.image}>
-  <div class="cols">
-    <article class={`art ${p.cat}`}>
-      <a class="back" href="/">← All posts</a><br />
-      <span class="tag">{CATS[p.cat]}</span>
-      <h1>{p.title}</h1>
-      <div class="meta">{fmtDate(p.date)} · {readMins(p.html)} min read</div>
-      {p.image && <figure><img src={`${p.image}?w=1200&auto=format`} alt={p.imageAlt || p.title} /></figure>}
-      <Fragment set:html={before} />
-      <AdSlot name="article" />
-      <Fragment set:html={after} />
-    </article>
-    <aside><AdSlot name="sidebar" side /></aside>
-  </div>
-  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+<Base
+  title={p.title}
+  description={p.excerpt}
+  image={cover}
+  type="article"
+  published={iso(p.date)}
+  modified={iso(p.updated)}
+  jsonLd={jsonLd}
+  section={`/topics/${topic.slug}/`}
+>
+  <div class="read-progress" aria-hidden="true"></div>
+
+  <article class="post" data-topic={p.topic}>
+    <header class="post-header container">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Log</a></li>
+          <li><a href={`/topics/${topic.slug}/`}>{topic.name}</a></li>
+        </ol>
+      </nav>
+      <div class="entry-meta">
+        <TopicTag topic={p.topic} />
+        <span class="entry-no">{entryNo(p.no)}</span>
+      </div>
+      <h1 class="post-title">{p.title}</h1>
+      {p.excerpt && <p class="post-dek">{p.excerpt}</p>}
+      <div class="byline">
+        <span class="avatar" aria-hidden="true">{initials}</span>
+        <div>
+          <span class="byline-name">By <a href="/about/">{AUTHOR.name}</a></span>
+          <span class="byline-meta">
+            <time datetime={iso(p.date)}>{fmtDate(p.date)}</time>
+            <span aria-hidden="true">·</span>
+            <span>{p.minutes} min read</span>
+            {wasUpdated && <><span aria-hidden="true">·</span><span>Updated <time datetime={iso(p.updated)}>{fmtDate(p.updated)}</time></span></>}
+          </span>
+        </div>
+      </div>
+      {p.link && (
+        <a class="btn btn-primary official-link" href={p.link} target="_blank" rel="noopener">
+          Visit the official page <span aria-hidden="true">↗</span>
+        </a>
+      )}
+    </header>
+
+    {cover && (
+      <figure class:list={['post-cover container', { 'is-small': (p.image.w || 0) < 900 }]}>
+        <img
+          src={cover}
+          srcset={imgSrcset(p.image.url, p.image.w)}
+          sizes="(min-width: 1000px) 960px, 100vw"
+          width={p.image.w}
+          height={p.image.h}
+          alt={p.image.alt || ''}
+          fetchpriority="high"
+        />
+      </figure>
+    )}
+
+    <div class="post-layout container">
+      <div class="post-main">
+        {p.toc.length >= 2 && (
+          <details class="toc-inline">
+            <summary>On this page</summary>
+            <Toc toc={p.toc} />
+          </details>
+        )}
+
+        <div class="prose">
+          <Fragment set:html={before} />
+          {after && <AdSlot name="article" />}
+          {after && <Fragment set:html={after} />}
+        </div>
+
+        {p.link && (
+          <aside class="callout" aria-label="Official link">
+            <p><strong>Going further?</strong> Dates, rules and prizes can change. Check the official page before you commit.</p>
+            <a class="btn" href={p.link} target="_blank" rel="noopener">Official page <span aria-hidden="true">↗</span></a>
+          </aside>
+        )}
+
+        <footer class="post-foot">
+          <ShareLinks url={url} title={p.title} />
+          <div class="author-card">
+            <span class="avatar avatar-lg" aria-hidden="true">{initials}</span>
+            <div>
+              <p class="author-name">{AUTHOR.name}</p>
+              <p class="author-role">{AUTHOR.role}. Spotted a mistake? <a href="/contact/">Let me know</a>.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <aside class="post-rail" aria-label="Article tools">
+        {p.toc.length >= 2 && (
+          <nav class="rail-block" aria-labelledby="toc-h">
+            <h2 id="toc-h" class="panel-label">On this page</h2>
+            <Toc toc={p.toc} />
+          </nav>
+        )}
+        <div class="rail-block">
+          <h2 class="panel-label">Entry details</h2>
+          <dl class="entry-details">
+            <div><dt>Entry</dt><dd>{entryNo(p.no)}</dd></div>
+            <div data-topic={p.topic}><dt>Filed under</dt><dd><a href={`/topics/${topic.slug}/`}>{topic.name}</a></dd></div>
+            <div><dt>Published</dt><dd><time datetime={iso(p.date)}>{fmtShort(p.date)}</time></dd></div>
+            <div><dt>Reading time</dt><dd>{p.minutes} min</dd></div>
+          </dl>
+          {p.link && <a class="btn btn-small rail-link" href={p.link} target="_blank" rel="noopener">Official page <span aria-hidden="true">↗</span></a>}
+        </div>
+        <AdSlot name="sidebar" />
+      </aside>
+    </div>
+  </article>
+
+  {(newer || older) && (
+    <nav class="container post-nav" aria-label="Previous and next entries">
+      {older ? <a class="post-nav-link" href={`/posts/${older.slug}/`} rel="prev"><span class="panel-label">← Older</span><span class="post-nav-title">{older.title}</span></a> : <span></span>}
+      {newer && <a class="post-nav-link is-next" href={`/posts/${newer.slug}/`} rel="next"><span class="panel-label">Newer →</span><span class="post-nav-title">{newer.title}</span></a>}
+    </nav>
+  )}
+
+  {more.length > 0 && (
+    <section class="container related" aria-labelledby="related-h">
+      <h2 id="related-h" class="section-label">Keep reading</h2>
+      <div class="card-grid">
+        {more.map((r) => <PostCard post={r} />)}
+      </div>
+    </section>
+  )}
 </Base>

@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPosts } from '../lib/posts.js';
+const latest = (await getPosts()).slice(0, 3);
+---
+<Base title="Page not found" description="This page isn't in the log.">
+  <header class="page-head container not-found">
+    <p class="eyebrow">Error 404</p>
+    <h1 class="display display-md">This entry isn't in the log.</h1>
+    <p class="lede">The link may be old, or the page may have moved. Try searching, or start from one of the latest entries.</p>
+    <div class="intro-actions">
+      <button class="btn btn-primary" type="button" data-search-open>Search the log</button>
+      <a class="btn" href="/">Go to the homepage</a>
+    </div>
+  </header>
+  {latest.length > 0 && (
+    <section class="container related" aria-labelledby="latest-h">
+      <h2 id="latest-h" class="section-label">Latest entries</h2>
+      <div class="card-grid">{latest.map((p) => <PostCard post={p} />)}</div>
+    </section>
+  )}
+</Base>

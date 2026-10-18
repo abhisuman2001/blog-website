@@ -1,10 +1,35 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SITE, AUTHOR, TOPICS } from '../config.js';
+const initials = AUTHOR.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('');
 ---
-<Base title="About – ShipLog" description="What ShipLog covers and who writes it.">
-  <div class="art">
-    <h1>About ShipLog</h1>
-    <p>ShipLog covers hackathon updates, AI news and practical tech guides for students and builders.</p>
-    <p>EDIT ME: add a short paragraph about who you are and why you write this blog. Original, personal pages like this help AdSense approval.</p>
+<Base title="About" description={`What ${SITE.name} covers, how it's written, and who writes it.`}>
+  <header class="page-head container">
+    <p class="eyebrow">About</p>
+    <h1 class="display display-md">{SITE.tagline}</h1>
+    <p class="lede">{SITE.name} keeps a running log of hackathons worth entering, AI news worth knowing, and tech guides worth bookmarking.</p>
+  </header>
+
+  <div class="container page-body prose">
+    <h2>What you'll find here</h2>
+    <ul>
+      {Object.values(TOPICS).map((t) => <li><a href={`/topics/${t.slug}/`}><strong>{t.name}</strong></a>: {t.description}</li>)}
+    </ul>
+
+    <h2>How entries are written</h2>
+    <p>Every entry is numbered and dated, like a line in a ship's log. Posts link to the original source, such as the official event page, documentation or announcement, so you can check the details yourself.</p>
+    <p>Deadlines move and tools change. When a post is corrected or updated, the date of the change is shown under the headline.</p>
+
+    <h2>Who writes it</h2>
+    <div class="author-card">
+      <span class="avatar avatar-lg" aria-hidden="true">{initials}</span>
+      <div>
+        <p class="author-name">{AUTHOR.name}</p>
+        <p class="author-role">{AUTHOR.role}. {AUTHOR.github && <a href={AUTHOR.github} rel="me noopener">GitHub</a>}</p>
+      </div>
+    </div>
+
+    <h2>Get in touch</h2>
+    <p>Corrections, tips about upcoming hackathons, and collaboration requests are all welcome on the <a href="/contact/">contact page</a>.</p>
   </div>
 </Base>

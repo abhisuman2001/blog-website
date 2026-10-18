@@ -1,0 +1,22 @@
+---
+import TopicTag from './TopicTag.astro';
+import { entryNo } from '../lib/posts.js';
+import { fmtDayMonth, fmtYear, iso } from '../lib/format.js';
+const { post: p, level = 3 } = Astro.props;
+const H = `h${level}`;
+---
+<article class="entry" data-topic={p.topic}>
+  <time class="entry-date" datetime={iso(p.date)}>
+    <span>{fmtDayMonth(p.date)}</span>
+    <span class="entry-year">{fmtYear(p.date)}</span>
+  </time>
+  <div class="entry-body">
+    <div class="entry-meta">
+      <TopicTag topic={p.topic} />
+      <span class="entry-no">{entryNo(p.no)}</span>
+    </div>
+    <H class="entry-title"><a href={`/posts/${p.slug}/`}>{p.title}</a></H>
+    {p.excerpt && <p class="entry-excerpt">{p.excerpt}</p>}
+    <p class="entry-foot">{p.minutes} min read</p>
+  </div>
+</article>

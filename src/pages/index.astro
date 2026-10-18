@@ -1,23 +1,104 @@
 ---
 import Base from '../layouts/Base.astro';
-import PostRow from '../components/PostRow.astro';
-import AdSlot from '../components/AdSlot.astro';
-import { getPosts } from '../lib/sanity.js';
+import EntryList from '../components/EntryList.astro';
+import TopicTag from '../components/TopicTag.astro';
+import { getPosts, entryNo, imgUrl, imgSrcset } from '../lib/posts.js';
+import { fmtShort, fmtYear, iso } from '../lib/format.js';
+import { SITE, TOPICS } from '../config.js';
+
 const posts = await getPosts();
-const f = posts[0];
+const [latest, ...rest] = posts;
+const recent = rest.slice(0, 10);
+const counts = Object.fromEntries(Object.keys(TOPICS).map((k) => [k, posts.filter((p) => p.topic === k).length]));
+const founded = posts.length ? fmtYear(posts[posts.length - 1].date) : fmtYear(new Date());
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: SITE.url,
+  description: SITE.description,
+  inLanguage: 'en-IN',
+};
 ---
-<Base>
-  <section class="hero">
-    <div>
-      <h1>Hackathons, AI and tech, minus the noise.</h1>
-      <p>Fresh updates and practical guides for people who build things.</p>
+<Base jsonLd={jsonLd}>
+  <section class="intro container">
+    <div class="intro-text">
+      <p class="eyebrow">The {SITE.name} · since {founded}</p>
+      <h1 class="display">A logbook for people who <em>build</em> things.</h1>
+      <p class="lede">Hackathon updates, AI news and practical tech guides. Short, dated, and written for students and builders.</p>
+      <div class="intro-actions">
+        <a class="btn btn-primary" href="#log">Read the log</a>
+        <a class="btn" href="/archive/">Browse the archive</a>
+      </div>
     </div>
-    {f && <a class="stamp" href={`/posts/${f.slug}/`}><small>Latest post</small><h2>{f.title}</h2><span>{f.excerpt}</span></a>}
+
+    <aside class="log-status" aria-labelledby="status-h">
+      <h2 id="status-h" class="panel-label">Log status</h2>
+      <dl>
+        <div><dt>Entries</dt><dd>{posts.length}</dd></div>
+        {latest && <div><dt>Last entry</dt><dd><time datetime={iso(latest.date)}>{fmtShort(latest.date)}</time></dd></div>}
+        {Object.entries(TOPICS).map(([k, t]) => (
+          <div data-topic={k}><dt><a href={`/topics/${t.slug}/`}>{t.name}</a></dt><dd>{counts[k]}</dd></div>
+        ))}
+      </dl>
+    </aside>
   </section>
-  <div class="cols">
-    <main>
-      {posts.map((p, i) => (<><PostRow p={p} />{i === 1 && <AdSlot name="feed" />}</>))}
-    </main>
-    <aside><AdSlot name="sidebar" side /></aside>
-  </div>
+
+  {latest && (
+    <section class="container featured-wrap" aria-labelledby="latest-h">
+      <h2 id="latest-h" class="section-label">Latest entry</h2>
+      <article class:list={['featured', { 'has-image': latest.image?.url }]} data-topic={latest.topic}>
+        {latest.image?.url && (
+          <img
+            class="featured-img"
+            src={imgUrl(latest.image.url, Math.min(latest.image.w || 1200, 1200))}
+            srcset={imgSrcset(latest.image.url, latest.image.w)}
+            sizes="(min-width: 900px) 520px, 100vw"
+            width={latest.image.w}
+            height={latest.image.h}
+            alt={latest.image.alt || ''}
+            fetchpriority="high"
+          />
+        )}
+        <div class="featured-body">
+          <div class="entry-meta">
+            <TopicTag topic={latest.topic} />
+            <span class="entry-no">{entryNo(latest.no)}</span>
+            <time class="entry-no" datetime={iso(latest.date)}>{fmtShort(latest.date)}</time>
+          </div>
+          <h3 class="featured-title"><a href={`/posts/${latest.slug}/`}>{latest.title}</a></h3>
+          {latest.excerpt && <p class="featured-excerpt">{latest.excerpt}</p>}
+          <span class="read-more" aria-hidden="true">Read entry <span class="arrow">→</span> · {latest.minutes} min</span>
+        </div>
+        {!latest.image?.url && <span class="featured-no" aria-hidden="true">{String(latest.no).padStart(3, '0')}</span>}
+      </article>
+    </section>
+  )}
+
+  <section id="log" class="container log" aria-labelledby="log-h">
+    <div class="section-head">
+      <h2 id="log-h" class="section-label">Recent entries</h2>
+      {posts.length > 1 && <a class="section-link" href="/archive/">Full archive →</a>}
+    </div>
+    {recent.length
+      ? <EntryList posts={recent} level={3} adAfter={4} />
+      : <p class="empty">More entries are on the way. Subscribe via <a href="/rss.xml">RSS</a> to catch the next one.</p>}
+  </section>
+
+  <section class="container topics" aria-labelledby="topics-h">
+    <h2 id="topics-h" class="section-label">Browse by topic</h2>
+    <ul class="topic-grid">
+      {Object.entries(TOPICS).map(([k, t]) => (
+        <li>
+          <a class="topic-card" data-topic={k} href={`/topics/${t.slug}/`}>
+            <span class="topic-dot" aria-hidden="true"></span>
+            <span class="topic-name">{t.name}</span>
+            <span class="topic-desc">{t.description}</span>
+            <span class="topic-count">{counts[k]} {counts[k] === 1 ? 'entry' : 'entries'} →</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
 </Base>
