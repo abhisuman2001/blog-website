@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import EntryList from '../../components/EntryList.astro';
+import { getPosts } from '../../lib/posts.js';
+import { SITE, TOPICS } from '../../config.js';
+
+export function getStaticPaths() {
+  return Object.entries(TOPICS).map(([key, topic]) => ({ params: { topic: topic.slug }, props: { key, topic } }));
+}
+
+const { key, topic } = Astro.props;
+const posts = (await getPosts()).filter((p) => p.topic === key);
+const others = Object.entries(TOPICS).filter(([k]) => k !== key);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `${topic.name} · ${SITE.name}`,
+  description: topic.description,
+  url: new URL(Astro.url.pathname, Astro.site).href,
+};
+---
+<Base title={topic.name} description={`${topic.description} Latest ${topic.name} entries on ${SITE.name}.`} jsonLd={jsonLd}>
+  <header class="page-head container" data-topic={key}>
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol><li><a href="/">Log</a></li><li><span aria-current="page">Topics</span></li></ol>
+    </nav>
+    <p class="eyebrow"><span class="topic-dot" aria-hidden="true"></span> Topic · {posts.length} {posts.length === 1 ? 'entry' : 'entries'}</p>
+    <h1 class="display display-md">{topic.name}</h1>
+    <p class="lede">{topic.description}</p>
+  </header>
+
+  <section class="container log" aria-label={`${topic.name} entries`}>
+    {posts.length
+      ? <EntryList posts={posts} level={2} adAfter={4} />
+      : <p class="empty">No {topic.name} entries yet. Check back soon, or browse <a href="/archive/">the archive</a>.</p>}
+  </section>
+
+  <nav class="container other-topics" aria-label="Other topics">
+    <span class="panel-label">Other topics</span>
+    {others.map(([k, t]) => <a class="tag tag-lg" data-topic={k} href={`/topics/${t.slug}/`}>{t.name}</a>)}
+  </nav>
+</Base>

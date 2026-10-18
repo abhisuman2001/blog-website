@@ -1,0 +1,15 @@
+---
+const { url, title } = Astro.props;
+const u = encodeURIComponent(url);
+const t = encodeURIComponent(title);
+---
+<div class="share">
+  <span class="share-label">Share</span>
+  <button class="btn btn-small" type="button" data-copy={url}>
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></svg>
+    <span data-copy-label>Copy link</span>
+  </button>
+  <a class="btn btn-small" href={`https://x.com/intent/post?url=${u}&text=${t}`} target="_blank" rel="noopener">X</a>
+  <a class="btn btn-small" href={`https://www.linkedin.com/sharing/share-offsite/?url=${u}`} target="_blank" rel="noopener">LinkedIn</a>
+  <a class="btn btn-small" href={`https://wa.me/?text=${t}%20${u}`} target="_blank" rel="noopener">WhatsApp</a>
+</div>

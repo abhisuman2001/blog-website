@@ -1,19 +1,44 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SITE } from '../config.js';
+import { fmtDate } from '../lib/format.js';
+
+// Change this whenever you edit the policy.
+const UPDATED = '2026-10-18T12:00:00Z';
 ---
-<Base title="Privacy policy – ShipLog" description="How ShipLog handles data, cookies and advertising.">
-  <div class="art">
-    <h1>Privacy policy</h1>
-    <p>This is a starting template. Review it and adapt it to your site before publishing. Last updated: EDIT DATE.</p>
+<Base title="Privacy policy" description={`How ${SITE.name} handles data, cookies and advertising.`}>
+  <header class="page-head container">
+    <p class="eyebrow">Last updated <time datetime={UPDATED}>{fmtDate(UPDATED)}</time></p>
+    <h1 class="display display-md">Privacy policy</h1>
+    <p class="lede">{SITE.name} is a read-only blog. There are no accounts, no comment forms and no newsletter sign-up, so we collect very little.</p>
+  </header>
+
+  <div class="container page-body prose">
     <h2>Information we collect</h2>
-    <p>ShipLog does not require an account. Like most websites, our hosting provider may log technical data such as IP address, browser type and pages visited.</p>
-    <h2>Cookies and advertising</h2>
-    <p>We use Google AdSense to show ads. Google and its partners use cookies to serve ads based on your visits to this and other websites. You can opt out of personalized advertising at <a href="https://www.google.com/settings/ads">google.com/settings/ads</a>. Learn more about how Google uses data at <a href="https://policies.google.com/technologies/partner-sites">policies.google.com/technologies/partner-sites</a>.</p>
-    <h2>Analytics</h2>
-    <p>If we use analytics tools, they collect anonymous usage data to help us improve the site.</p>
-    <h2>External links</h2>
-    <p>Posts may link to other websites. We are not responsible for their content or privacy practices.</p>
+    <p>We don't ask you for any personal information. Our hosting provider automatically records standard server logs, such as your IP address, browser type, the pages you request and the time of the request. These logs are used to keep the site secure and working, and are deleted on the provider's normal schedule.</p>
+
+    <h2>What your browser stores</h2>
+    <p>If you switch between light and dark mode, your choice is saved in your browser's local storage so it's remembered on your next visit. It never leaves your device.</p>
+
+    <h2>Advertising and cookies</h2>
+    <p>{SITE.name} may show ads served by Google AdSense. Google and its partners use cookies to serve ads based on your previous visits to this and other websites. Google's use of advertising cookies lets it and its partners serve ads based on your visits to sites on the internet.</p>
+    <ul>
+      <li>You can opt out of personalised advertising in <a href="https://adssettings.google.com" rel="noopener">Google's Ad Settings</a>.</li>
+      <li>You can opt out of some third-party vendors' use of cookies for personalised advertising at <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>.</li>
+      <li>Learn how Google uses data from sites that use its services at <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">policies.google.com</a>.</li>
+    </ul>
+    <p>Where the law requires it, such as in the EU, UK and EEA, you will be asked for consent before personalised ads are shown.</p>
+
+    <h2>Links to other websites</h2>
+    <p>Entries link to event pages, documentation and other sites. We aren't responsible for their content or privacy practices, so please read their policies.</p>
+
+    <h2>Children</h2>
+    <p>{SITE.name} is not directed at children under 13, and we don't knowingly collect information from them.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes, the new version will be posted on this page with an updated date at the top.</p>
+
     <h2>Contact</h2>
-    <p>Questions about this policy? See our <a href="/contact/">contact page</a>.</p>
+    <p>Questions about this policy? Reach us through the <a href="/contact/">contact page</a>.</p>
   </div>
 </Base>

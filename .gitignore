@@ -3,3 +3,7 @@ dist/
 .astro/
 .env
 .DS_Store
+
+# Sanity Studio generated files
+studio/.sanity/
+studio/dist/

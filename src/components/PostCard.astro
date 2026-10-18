@@ -1,0 +1,14 @@
+---
+import TopicTag from './TopicTag.astro';
+import { fmtShort, iso } from '../lib/format.js';
+const { post: p, level = 3 } = Astro.props;
+const H = `h${level}`;
+---
+<article class="card" data-topic={p.topic}>
+  <div class="card-meta">
+    <TopicTag topic={p.topic} />
+    <time datetime={iso(p.date)}>{fmtShort(p.date)}</time>
+  </div>
+  <H class="card-title"><a href={`/posts/${p.slug}/`}>{p.title}</a></H>
+  {p.excerpt && <p class="card-excerpt">{p.excerpt}</p>}
+</article>

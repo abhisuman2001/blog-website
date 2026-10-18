@@ -1,0 +1,8 @@
+---
+import { TOPICS } from '../config.js';
+const { topic, link = true } = Astro.props;
+const t = TOPICS[topic];
+---
+{link
+  ? <a class="tag" data-topic={topic} href={`/topics/${t.slug}/`}>{t.name}</a>
+  : <span class="tag" data-topic={topic}>{t.name}</span>}

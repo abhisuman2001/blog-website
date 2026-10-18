@@ -1,0 +1,8 @@
+---
+const { toc } = Astro.props;
+---
+<ol class="toc" data-toc>
+  {toc.map((h) => (
+    <li class:list={[{ 'toc-sub': h.level === 3 }]}><a href={`#${h.id}`}>{h.text}</a></li>
+  ))}
+</ol>
